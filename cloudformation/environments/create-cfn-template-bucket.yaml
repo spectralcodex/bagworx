@@ -9,10 +9,10 @@ Parameters:
 
 Resources:
   PipelineArtifactS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    BucketName:
-      Ref: S3BucketName
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: S3BucketName
 
   PipelineArtifactS3BucketPolicy:
     Type: AWS::S3::BucketPolicy
