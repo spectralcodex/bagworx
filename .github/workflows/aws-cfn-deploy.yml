@@ -34,3 +34,26 @@ jobs:
               --template-file cloudformation/environments/create-cfn-template-bucket.yaml \
               --region $AWS_REGION \
               --capabilities CAPABILITY_NAMED_IAM
+
+
+  
+  copy_template_to_s3:
+    name: Upload Templates to S3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Copy templates to S3
+        run: |
+             aws s3 cp cloudformation/environments/ s3://${BUCKET_NAME}/environments/ --recursive
+
+
+  
