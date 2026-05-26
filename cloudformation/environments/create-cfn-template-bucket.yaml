@@ -17,8 +17,7 @@ Resources:
   PipelineArtifactS3BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: PipelineArtifactS3Bucket
+      Bucket: !Ref PipelineArtifactS3Bucket
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -33,7 +32,6 @@ Resources:
               - s3:GetObjectVersion
               - s3:PutObject
               - s3:ListBucket
-            Resource:
-              Fn::Sub:
-                - arn:${AWS::Partition}:s3:::${S3BucketName}/*
-                - arn:${AWS::Partition}:s3:::${S3BucketName}
+            Resource: 
+              - !Sub arn:${AWS::Partition}:s3:::${S3BucketName}/*
+              - !Sub arn:${AWS::Partition}:s3:::${S3BucketName}
