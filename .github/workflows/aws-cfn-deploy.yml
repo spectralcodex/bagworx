@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION:  ${{ vars.AWS_REGION }}
-  BUCKET_NAME: ct-cfn-files-for-stack-github-actions
+  BUCKET_NAME: cfn-templates-github-actions
 
 jobs:
 
@@ -29,4 +29,8 @@ jobs:
 
       - name: Deploy bucket stack
         run: |
-          echo $AWS_REGION
+             aws cloudformation deploy \
+              --stack-name cfn-template-bucket \
+              --template-file cloudformation/environments/create-cfn-template-bucket.yaml \
+              --region $AWS_REGION \
+              --capabilities CAPABILITY_NAMED_IAM
