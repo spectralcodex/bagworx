@@ -8,16 +8,16 @@ Parameters:
     Default: cfn-templates-github-actions
 
 Resources:
-  PipelineArtifactS3Bucket: null
+  PipelineArtifactS3Bucket:
   Type: AWS::S3::Bucket
   Properties:
-    BucketName: 
+    BucketName:
       Ref: S3BucketName
 
   PipelineArtifactS3BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: 
+      Bucket:
         Ref: PipelineArtifactS3Bucket
       PolicyDocument:
         Version: 2012-10-17
@@ -33,7 +33,7 @@ Resources:
               - s3:GetObjectVersion
               - s3:PutObject
               - s3:ListBucket
-            Resource: 
+            Resource:
               Fn::Sub:
                 - arn:${AWS::Partition}:s3:::${S3BucketName}/*
                 - arn:${AWS::Partition}:s3:::${S3BucketName}
