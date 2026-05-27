@@ -1,4 +1,4 @@
-name: AWS CloudFormation CI/CD using GitHub Actions
+name: Deploy
 
 on:
   push:
@@ -24,8 +24,9 @@ env:
 jobs:
   
   create_bucket:
-    name: Create S3 Bucket
+    name: Create S3 Bucket 1
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -49,6 +50,7 @@ jobs:
   copy_template_to_s3:
     name: Upload Templates to S3
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -101,6 +103,7 @@ jobs:
    name: Validate Templates
    needs: [copy_template_to_s3]
    runs-on: ubuntu-latest
+   if: github.ref == 'refs/heads/main'
    steps:
      - uses: actions/checkout@v3
  
