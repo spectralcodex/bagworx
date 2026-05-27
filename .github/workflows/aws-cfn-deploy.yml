@@ -72,13 +72,9 @@ jobs:
    
      - name: Validate all templates
        run: |
-            if [-z ${{ inputs.environment }}]; then
-              aws cloudformation validate-template \
-                --template-url file://cloudformation/environments/dev/root.yaml
-            else
-              aws cloudformation validate-template \
-                --template-url file://cloudformation/environments/${{ inputs.environment }}/root.yaml
-            fi
+            aws cloudformation validate-template \
+              --template-url file://cloudformation/environments/dev/root.yaml
+           
 
   # deploy to AWS
 
@@ -109,6 +105,7 @@ jobs:
   
   copy_template_to_s3:
     if: github.ref == 'refs/heads/main'
+    needs: [create_bucket]
     name: upload templates to S3
     runs-on: ubuntu-latest
    
@@ -131,7 +128,9 @@ jobs:
   validate_templates_s3:
    if: github.ref == 'refs/heads/main'
    name: validate templates S3
-   needs: [copy_template_to_s3]
+   needs: 
+    - create_bucket
+    - copy_template_to_s3
    runs-on: ubuntu-latest
    
    steps:
