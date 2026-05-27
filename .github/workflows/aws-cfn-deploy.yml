@@ -51,7 +51,6 @@ jobs:
   # deploy to AWS
 
   create_bucket:
-    if: github.ref == 'refs/heads/main'
     needs:
       - linting
     name: create bucket
@@ -77,7 +76,6 @@ jobs:
            --capabilities CAPABILITY_NAMED_IAM
 
   copy_template:
-    if: github.ref == 'refs/heads/main'
     needs: [create_bucket]
     name: upload templates
     runs-on: ubuntu-latest
@@ -98,7 +96,6 @@ jobs:
           aws s3 cp cloudformation/environments/ s3://${BUCKET_NAME}/environments/ --recursive
 
   validate_templates:
-    if: github.ref == 'refs/heads/main'
     name: validate templates
     needs:
       - create_bucket
@@ -121,7 +118,6 @@ jobs:
            --template-url https://cfn-templates-github-actions.s3.eu-west-2.amazonaws.com/environments/${{ inputs.environment }}/root.yaml
 
   deploy:
-    if: github.ref == 'refs/heads/main'
     name: Deploy Stacks
     needs:
       - create_bucket
