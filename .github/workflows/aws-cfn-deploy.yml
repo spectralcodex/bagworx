@@ -23,50 +23,8 @@ env:
 
 jobs:
   
-  create_bucket:
-    name: Create S3 Bucket 1
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Deploy bucket stack
-        run: |
-             aws cloudformation deploy \
-              --stack-name cfn-template-bucket \
-              --template-file cloudformation/environments/create-cfn-template-bucket.yaml \
-              --region $AWS_REGION \
-              --capabilities CAPABILITY_NAMED_IAM
-
-
-  copy_template_to_s3:
-    name: Upload Templates to S3
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Copy templates to S3
-        run: |
-             aws s3 cp cloudformation/environments/ s3://${BUCKET_NAME}/environments/ --recursive
-
-
+  
+# Local checks
   lock_file:
     runs-on: ubuntu-latest
     steps:
@@ -96,14 +54,85 @@ jobs:
         - uses: ./.github/actions/setup
         - run: uvx ruff format --check .
 
-  
-
-
   validate_templates_local:
    name: Validate Templates
    needs: [copy_template_to_s3]
    runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v3
+ 
+     - name: Configure AWS credentials
+       uses: aws-actions/configure-aws-credentials@v2
+       with:
+         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         aws-region: ${{ env.AWS_REGION }}
+ 
+   
+     - name: Validate all templates
+       run: |
+            if [-z ${{ inputs.environment }}]; then
+              aws cloudformation validate-template \
+                --template-url file://cloudformation/environments/dev/root.yaml
+            else
+              aws cloudformation validate-template \
+                --template-url file://cloudformation/environments/${{ inputs.environment }}/root.yaml
+            fi
+
+  # deploy to AWS
+
+  create_bucket:
+    if: github.ref == 'refs/heads/main'
+    name: Create S3 Bucket 1
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+  
+      - name: Deploy bucket stack
+        run: |
+             aws cloudformation deploy \
+              --stack-name cfn-template-bucket \
+              --template-file cloudformation/environments/create-cfn-template-bucket.yaml \
+              --region $AWS_REGION \
+              --capabilities CAPABILITY_NAMED_IAM
+  
+  
+  copy_template_to_s3:
+    if: github.ref == 'refs/heads/main'
+    name: Upload Templates to S3
+    runs-on: ubuntu-latest
+   
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+  
+      - name: Copy templates to S3
+        run: |
+             aws s3 cp cloudformation/environments/ s3://${BUCKET_NAME}/environments/ --recursive
+  
+
+  validate_templates_s3:
    if: github.ref == 'refs/heads/main'
+   name: Validate Templates
+   needs: [copy_template_to_s3]
+   runs-on: ubuntu-latest
+   
    steps:
      - uses: actions/checkout@v3
  
