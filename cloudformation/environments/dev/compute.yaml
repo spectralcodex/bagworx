@@ -18,8 +18,8 @@ Parameters:
   MyPublicSubnet:
     Type: String
 
-  ALBSecurityGroup:
-    Type: String
+  #ALBSecurityGroup:
+  #  Type: String
 
   InstanceSecurityGroup:
     Type: String

@@ -2,17 +2,18 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Parent Stack for the specified environment'
 
 Parameters:
-  TemplateUrlBase: 
+  TemplateUrlBase:
     Type: String
-    Default: 'https://ct-cfn-files-for-stack-github-actions.s3.us-east-1.amazonaws.com/infrastructure'
+    Default: 'https://cfn-templates-github-actions.s3.eu-west-2.amazonaws.com/environments'
+    
   Environment:
     Description: List of available environments
     Type: String
     AllowedValues:
-      - development
+      - dev
       - staging
       - production
-    Default: development
+    Default: dev
 
 Resources:
   NetworkStack:
@@ -34,3 +35,5 @@ Resources:
         Environment: !Ref Environment
         MyPublicSubnet: !GetAtt NetworkStack.Outputs.MyPublicSubnet
         InstanceSecurityGroup: !GetAtt NetworkStack.Outputs.InstanceSecurityGroup
+
+       

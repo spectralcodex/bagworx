@@ -56,4 +56,53 @@ jobs:
              aws s3 cp cloudformation/environments/ s3://${BUCKET_NAME}/environments/ --recursive
 
 
+  lock_file:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+        - uses: ./.github/actions/setup
+        - run: uv lock --locked
+
+
+  linting:
+    name: Lint Cloudformation Templates
+    runs-on: ubuntu-latest
+    needs: [lock_file]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - name: lint_cfn
+        run: uvx cfn-lint cloudformation/environments/*.yaml cloudformation/environments/dev/*.yaml
+
+      - name: lint_app
+        run: uvx ruff check .
   
+  formatting:
+    runs-on: ubuntu-latest
+    needs: [lock_file]
+    steps:
+        - uses: actions/checkout@v3
+        - uses: ./.github/actions/setup
+        - run: uvx ruff format --check .
+
+  
+  validate_templates:
+   name: Validate Templates
+   needs: [copy_template_to_s3]
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v3
+ 
+     - name: Configure AWS credentials
+       uses: aws-actions/configure-aws-credentials@v2
+       with:
+         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         aws-region: ${{ env.AWS_REGION }}
+ 
+     - name: Validate all templates
+       run: |
+         for env in development staging production; do
+           aws cloudformation validate-template \
+             --template-url https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/environments/$env/root.yaml
+         done     
