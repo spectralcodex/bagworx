@@ -63,7 +63,7 @@ Resources:
         KeyName: WorkshopKeyPair
         IamInstanceProfile:
           Name: !Ref IAMInstanceProfile
-        ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+        ImageId: ami-0150189e4c09ffab5
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         UserData:
