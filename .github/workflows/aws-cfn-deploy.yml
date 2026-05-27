@@ -15,6 +15,7 @@ on:
           - dev
           - staging
           - prod
+        
 
 env:
   AWS_REGION:  ${{ vars.AWS_REGION }}
@@ -113,5 +114,5 @@ jobs:
      - name: Validate all templates
        run: |
             aws cloudformation validate-template \
-             --template-url cloudformation/environments/${{ inputs.environment }}/root.yaml
+             --template-url https://cfn-templates-github-actions.s3.eu-west-2.amazonaws.com/environments/${{ inputs.environment }}/root.yaml
     
