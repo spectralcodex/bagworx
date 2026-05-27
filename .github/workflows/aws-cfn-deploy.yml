@@ -4,15 +4,24 @@ on:
   push:
     branches:
       - '*'
-  #workflow_dispatch:
-  
+      
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Choose deployment environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
 
 env:
   AWS_REGION:  ${{ vars.AWS_REGION }}
   BUCKET_NAME: cfn-templates-github-actions
 
 jobs:
-
+  
   create_bucket:
     name: Create S3 Bucket
     runs-on: ubuntu-latest
@@ -36,7 +45,6 @@ jobs:
               --capabilities CAPABILITY_NAMED_IAM
 
 
-  
   copy_template_to_s3:
     name: Upload Templates to S3
     runs-on: ubuntu-latest
@@ -86,7 +94,9 @@ jobs:
         - run: uvx ruff format --check .
 
   
-  validate_templates:
+
+
+  validate_templates_local:
    name: Validate Templates
    needs: [copy_template_to_s3]
    runs-on: ubuntu-latest
@@ -102,7 +112,6 @@ jobs:
  
      - name: Validate all templates
        run: |
-         for env in development staging production; do
-           aws cloudformation validate-template \
-             --template-url https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/environments/$env/root.yaml
-         done     
+            aws cloudformation validate-template \
+             --template-url cloudformation/environments/${{ inputs.environment }}/root.yaml
+    
