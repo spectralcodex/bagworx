@@ -46,7 +46,9 @@ jobs:
   formatting:
     name: format sources
     runs-on: ubuntu-latest
-    needs: [lock_file]
+    needs:
+      - lock_file
+      - linting
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
@@ -56,6 +58,9 @@ jobs:
 
   create_bucket:
     if: github.ref == 'refs/heads/main'
+    needs:
+      - linting
+      - formatting
     name: create S3 bucket
     runs-on: ubuntu-latest
 
@@ -126,6 +131,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     name: Deploy Stacks
     needs:
+      - create_bucket
+      - copy_template
       - validate_templates
     runs-on: ubuntu-latest
     strategy:
